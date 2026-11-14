@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telegram Connected Website</title>
+
+<style>
+body {
+  background: #eaf2f8;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 30px 15px;
+}
+.card {
+  background: white;
+  max-width: 380px;
+  margin: 50px auto;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px #0002;
+}
+h2 { color: #229ed9; }
+button, .login {
+  display: inline-block;
+  background: #229ed9;
+  color: white;
+  padding: 13px 25px;
+  border: 0;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+img {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+small { color: #666; }
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h2>Telegram Login</h2>
+
+  <p>Sign in to this website using official Telegram authorization.</p>
+
+  <div id="content">Checking login status...</div>
+
+  <p><small>
+    This website never asks for your Telegram password
+    or login code.
+  </small></p>
+</div>
+
+<script>
+async function loadUser() {
+  const content = document.getElementById("content");
+
+  try {
+    const response = await fetch("/api/me");
+    const data = await response.json();
+
+    if (!data.loggedIn) {
+      content.innerHTML = `
+        <a class="login" href="/auth/telegram">
+          Continue with Telegram
+        </a>
+      `;
+      return;
+    }
+
+    const user = data.user;
+
+    content.replaceChildren();
+
+    if (user.picture) {
+      const photo = document.createElement("img");
+      photo.src = user.picture;
+      photo.alt = "Telegram profile photo";
+      content.appendChild(photo);
+    }
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Welcome, " + (user.name || "Telegram user");
+    content.appendChild(heading);
+
+    const username = document.createElement("p");
+    username.textContent = user.username
+      ? "@" + user.username
+      : "Username not provided";
+    content.appendChild(username);
+
+    const id = document.createElement("p");
+    id.textContent = "Telegram ID: " + user.id;
+    content.appendChild(id);
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/logout";
+
+    const logout = document.createElement("button");
+    logout.type = "submit";
+    logout.textContent = "Log out";
+
+    form.appendChild(logout);
+    content.appendChild(form);
+
+  } catch {
+    content.textContent = "Unable to check login status.";
+  }
+}
+
+loadUser();
+</script>
+</body>
+</html>
